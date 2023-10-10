@@ -1,12 +1,12 @@
 {
   "name": "vite-plugin-simple-rpc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Minimal vite plugin that allows you to easily create simple fullstack apps with automatic RPC wrappers",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsup src/index.ts"
+    "build": "tsup-node src/index.ts"
   },
   "keywords": [
     "vite-plugin"
