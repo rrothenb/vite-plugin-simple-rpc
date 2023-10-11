@@ -35,6 +35,7 @@ module.exports = __toCommonJS(src_exports);
 var import_typescript = __toESM(require("typescript"));
 var import_astring = require("astring");
 var import_acorn_walk = require("acorn-walk");
+var import_glob = require("glob");
 var apiRoutes = {};
 var buildExpressionAst = (name, basePath, serverRoutes, parse) => {
   const fullPath = `${basePath}/${name}`;
@@ -98,8 +99,9 @@ function SimpleRPCPlugin() {
         }
       });
     },
-    buildStart: function() {
-      const program = import_typescript.default.createProgram(["src/server/util.ts", "src/server/other.ts"], {
+    buildStart: async function() {
+      const files = await (0, import_glob.glob)("src/server/**/*.{js,ts}");
+      const program = import_typescript.default.createProgram(files, {
         outDir: ".rpc/build",
         moduleResolution: import_typescript.default.ModuleResolutionKind.Node10,
         target: import_typescript.default.ScriptTarget.ESNext,

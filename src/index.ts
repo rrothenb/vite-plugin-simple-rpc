@@ -1,6 +1,7 @@
 import ts from "typescript"
 import { generate } from 'astring'
 import {simple} from 'acorn-walk'
+import {glob} from 'glob'
 
 const apiRoutes = {}
 
@@ -70,8 +71,9 @@ export default function SimpleRPCPlugin() {
         }
       })
     },
-    buildStart: function() {
-      const program = ts.createProgram(["src/server/util.ts", "src/server/other.ts"], {
+    buildStart: async function() {
+      const files = await glob('src/server/**/*.{js,ts}')
+      const program = ts.createProgram(files, {
         outDir: '.rpc/build',
         moduleResolution: ts.ModuleResolutionKind.Node10,
         target: ts.ScriptTarget.ESNext,

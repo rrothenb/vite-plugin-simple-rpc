@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-simple-rpc",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Minimal vite plugin that allows you to easily create simple fullstack apps with automatic RPC wrappers",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -19,7 +19,8 @@
   },
   "dependencies": {
     "acorn-walk": "^8.2.0",
-    "astring": "^1.8.6"
+    "astring": "^1.8.6",
+    "glob": "^10.3.10"
   },
   "author": "Rick Rothenberg <rrothenb@yahoo.com>",
   "license": "MIT"
