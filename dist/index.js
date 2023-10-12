@@ -37,11 +37,14 @@ var import_astring = require("astring");
 var import_acorn_walk = require("acorn-walk");
 var import_glob = require("glob");
 var apiRoutes = {};
-var buildExpressionAst = (name, basePath, serverRoutes, parse) => {
+var buildExpressionAst = (name, node, basePath, serverRoutes, parse) => {
   const fullPath = `${basePath}/${name}`;
   const func = serverRoutes[fullPath];
-  const parms = func.toString().replace(/\n/g, " ").replace(/^[^(]*\(/, "").replace(/\).*$/, "");
-  return parse(`{return (await fetch('/server${fullPath}', {method: 'POST', body:  JSON.stringify([${parms}])})).json()}`, { allowReturnOutsideFunction: true }).body[0];
+  if (func) {
+    const parms = func.toString().replace(/\n/g, " ").replace(/^[^(]*\(/, "").replace(/\).*$/, "");
+    node.body = parse(`{return (await fetch('/server${fullPath}', {method: 'POST', body:  JSON.stringify([${parms}])})).json()}`, { allowReturnOutsideFunction: true }).body[0];
+  }
+  return !!func;
 };
 function SimpleRPCPlugin() {
   return {
@@ -71,11 +74,12 @@ function SimpleRPCPlugin() {
         const parse = this.parse;
         (0, import_acorn_walk.simple)(ast, {
           VariableDeclarator(node) {
-            node.init.expression = false;
-            node.init.body = buildExpressionAst(node.id.name, urlPath, apiRoutes, parse);
+            if (buildExpressionAst(node.id.name, node.init, urlPath, apiRoutes, parse)) {
+              node.init.expression = false;
+            }
           },
           FunctionDeclaration(node) {
-            node.body = buildExpressionAst(node.id.name, urlPath, apiRoutes, parse);
+            buildExpressionAst(node.id.name, node, urlPath, apiRoutes, parse);
           }
         });
         const newCode = (0, import_astring.generate)(ast);

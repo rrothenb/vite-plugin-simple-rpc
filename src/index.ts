@@ -5,11 +5,14 @@ import {glob} from 'glob'
 
 const apiRoutes = {}
 
-const buildExpressionAst = (name, basePath, serverRoutes, parse) => {
+const buildExpressionAst = (name, node, basePath, serverRoutes, parse): boolean => {
   const fullPath = `${basePath}/${name}`
   const func = serverRoutes[fullPath]
-  const parms = func.toString().replace(/\n/g, ' ').replace(/^[^(]*\(/, '').replace(/\).*$/, '')
-  return parse(`{return (await fetch('/server${fullPath}', {method: 'POST', body:  JSON.stringify([${parms}])})).json()}`, {allowReturnOutsideFunction: true}).body[0]
+  if (func) {
+    const parms = func.toString().replace(/\n/g, ' ').replace(/^[^(]*\(/, '').replace(/\).*$/, '')
+    node.body = parse(`{return (await fetch('/server${fullPath}', {method: 'POST', body:  JSON.stringify([${parms}])})).json()}`, {allowReturnOutsideFunction: true}).body[0]
+  }
+  return !!func
 }
 
 export default function SimpleRPCPlugin() {
@@ -40,11 +43,12 @@ export default function SimpleRPCPlugin() {
         const parse = this.parse
         simple(ast, {
           VariableDeclarator(node) {
-            node.init.expression = false
-            node.init.body = buildExpressionAst(node.id.name, urlPath, apiRoutes, parse)
+            if (buildExpressionAst(node.id.name, node.init, urlPath, apiRoutes, parse)) {
+              node.init.expression = false
+            }
           },
           FunctionDeclaration(node) {
-            node.body = buildExpressionAst(node.id.name, urlPath, apiRoutes, parse)
+            buildExpressionAst(node.id.name, node, urlPath, apiRoutes, parse)
           }
         })
 
